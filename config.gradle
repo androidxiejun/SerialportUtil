@@ -1,0 +1,28 @@
+
+ext {
+    isDebug = 'false'
+
+    signingConfig = [
+            storePassword: 'hzdhht',
+            keyAlias     : 'hzdhht',
+            keyPassword  : 'hzdhht'
+    ]
+
+    android = [
+            compileSdkVersion: 28,
+            buildToolsVersion: '28.0.2',
+            minSdkVersion    : 17,
+            targetSdkVersion : 28,
+            versionName      : '1.6.8',
+            versionCode      : 2
+    ]
+
+    dependencies = [
+            supportV4   : 'com.android.support:support-v4:28.0.0',
+            supportV7 : 'com.android.support:appcompat-v7:28.0.0',
+            design      : 'com.android.support:design:28.0.0'
+
+    ]
+
+
+}

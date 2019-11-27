@@ -1,0 +1,51 @@
+apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
+android {
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    sourceSets {
+        main {
+            jni.srcDirs = [] //禁止使用默认的ndk编译系统
+            jniLibs.srcDirs 'src/main/libs' //so存放地方
+        }
+    }
+
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            pom.groupId = GROUP_ID
+            pom.artifactId = ARTIFACT_ID
+            pom.version = VERSION
+
+            repository(url: RELEASE_URL) {
+                authentication(userName: NEXUS_USERNAME, password: NEXUS_PASSWORD)
+            }
+        }
+    }
+}
+
+dependencies {
+    api fileTree(dir: 'libs', include: ['*.jar'])
+}
