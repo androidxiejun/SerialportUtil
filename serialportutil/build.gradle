@@ -14,6 +14,19 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+//        ndk {
+//            ndk {
+//                // 设置支持的SO库架构
+//                abiFilters 'armeabi', 'armeabi-v7a', 'x86_64', "mips", "mips64", "x86", "x86_64"
+//            }
+//        }
+
+        ndk {
+            // 设置支持的SO库架构
+            abiFilters 'armeabi', 'armeabi-v7a', 'x86_64', "mips", "mips64", "x86", "x86_64"
+        }
+
+
     }
 
     buildTypes {
@@ -25,8 +38,9 @@ android {
 
     sourceSets {
         main {
-            jni.srcDirs = [] //禁止使用默认的ndk编译系统
-            jniLibs.srcDirs 'src/main/libs' //so存放地方
+//            jni.srcDirs = [] //禁止使用默认的ndk编译系统
+//            jniLibs.srcDirs 'src/main/libs' //so存放地方
+            jniLibs.srcDirs = ['libs']
         }
     }
 

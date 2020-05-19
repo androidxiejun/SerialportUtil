@@ -1,7 +1,9 @@
 package dhht.android.serialportutil;
 
+import android.content.Context;
 import android.os.SystemClock;
 import android.serialport.SerialPort;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +16,8 @@ import java.io.OutputStream;
  * @date 2018/12/26  下午2:42
  */
 public class SerialPortService implements ISerialPortService {
+
+    private static SerialPortService sInstance;
 
     /**
      * 尝试读取数据间隔时间
@@ -55,6 +59,15 @@ public class SerialPortService implements ISerialPortService {
 
     private OutputStream mOutputStream;
 
+    public static SerialPortService getInstance() {
+        synchronized (SerialPortService.class) {
+            if (sInstance == null) {
+                sInstance = new SerialPortService();
+            }
+            return sInstance;
+        }
+    }
+
     /**
      * 初始化串口
      *
@@ -63,21 +76,26 @@ public class SerialPortService implements ISerialPortService {
      * @param timeOut    数据返回超时时间
      * @throws IOException 打开串口出错
      */
-    public SerialPortService(String devicePath, int baudrate, Long timeOut) throws IOException {
+    public boolean initSerialPortService(String devicePath, int baudrate, Long timeOut) throws IOException {
         mTimeOut = timeOut;
         mDevicePath = devicePath;
         mBaudrate = baudrate;
-        mSerialPort = new SerialPort(new File(mDevicePath), mBaudrate);
+        File file = new File(mDevicePath);
+//        mSerialPort = new SerialPort(context,file, mBaudrate);
+        mSerialPort = SerialPort.getInstance();
+        boolean isSuccess = mSerialPort.initSerialPort( file, mBaudrate);
+        if (!isSuccess) {
+            return false;
+        }
         mInputStream = mSerialPort.getInputStream();
         mOutputStream = mSerialPort.getOutputStream();
+        return true;
     }
 
     @Override
     public byte[] sendData(byte[] data) {
         synchronized (SerialPortService.this) {
             try {
-//                InputStream inputStream = mSerialPort.getInputStream();
-//                OutputStream outputStream = mSerialPort.getOutputStream();
                 if (mInputStream == null) {
                     return null;
                 }
@@ -134,6 +152,7 @@ public class SerialPortService implements ISerialPortService {
 
     /**
      * q清除串口多余数据并发送数据
+     *
      * @param data
      */
     public synchronized void clearInputBufferAndSendData(byte[] data) {
@@ -150,8 +169,9 @@ public class SerialPortService implements ISerialPortService {
 
     /**
      * 读取串口数据
+     *
      * @param length  指定读取数据长度
-     * @param timeout  指定超时时间
+     * @param timeout 指定超时时间
      * @return
      */
     public synchronized byte[] readData(int length, int timeout) throws Exception {
@@ -169,6 +189,7 @@ public class SerialPortService implements ISerialPortService {
 
     /**
      * 发送数据+接收数据
+     *
      * @param data
      * @param length
      * @param timeout
@@ -179,31 +200,31 @@ public class SerialPortService implements ISerialPortService {
         return readData(length, timeout);
     }
 
-//    public byte[] readData(byte delimiter, int maxLen, int timeout) throws Exception {
-//        byte[] data = new byte[maxLen];
-//        int readedLen = 0;
-//        long startTime = System.currentTimeMillis();
-//        while (true) {
-//            if(mSerialPort.getInputStream().available() <= 0) {
-//                Thread.sleep(20);
-//            }
-//            if((System.currentTimeMillis() - startTime) > timeout) {
-//                throw new Exception("读取超时");
-//            }
-//
-//            mSerialPort.getInputStream().read(data, readedLen, 1);
-//            if(delimiter == data[readedLen]) {
-//                break;
-//            }
-//
-//            readedLen ++;
-//
-//            if (readedLen == maxLen) {
-//                throw new Exception("超过限定长度");
-//            }
-//        }
-//        return data;
-//    }
+    public byte[] readData(byte delimiter, int maxLen, int timeout) throws Exception {
+        byte[] data = new byte[maxLen];
+        int readedLen = 0;
+        long startTime = System.currentTimeMillis();
+        while (true) {
+            if (mSerialPort.getInputStream().available() <= 0) {
+                Thread.sleep(20);
+            }
+            if ((System.currentTimeMillis() - startTime) > timeout) {
+                throw new Exception("读取超时");
+            }
+
+            mSerialPort.getInputStream().read(data, readedLen, 1);
+            if (delimiter == data[readedLen]) {
+                break;
+            }
+
+            readedLen++;
+
+            if (readedLen == maxLen) {
+                throw new Exception("超过限定长度");
+            }
+        }
+        return data;
+    }
 
     @Override
     public void close() {
