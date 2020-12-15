@@ -17,9 +17,7 @@
 package android.serialport;
 
 
-import android.content.Context;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -32,16 +30,6 @@ import java.io.OutputStream;
 
 public class SerialPort {
     private static final String TAG = "=====SerialPort";
-    private static SerialPort sInstance;
-
-    public static SerialPort getInstance() {
-        synchronized (SerialPort.class) {
-            if (sInstance == null) {
-                sInstance = new SerialPort();
-            }
-            return sInstance;
-        }
-    }
 
     static {
         System.loadLibrary("serial_port");
@@ -51,51 +39,33 @@ public class SerialPort {
     private FileInputStream mFileInputStream;
     private FileOutputStream mFileOutputStream;
 
-
-//    public SerialPort(Context context, File device, int baudrate) throws SecurityException, IOException {
-//        if (!device.canRead() || !device.canWrite()) {
-//            Toast.makeText(context, "开启身份证串口失败", Toast.LENGTH_SHORT).show();
-////            try {
-////                Process su;
-////                su = Runtime.getRuntime().exec("su");
-////                String cmd = "chmod 777 " + device.getAbsolutePath();
-////                su.getOutputStream().write(cmd.getBytes());
-////                su.getOutputStream().flush();
-////                int waitFor = su.waitFor();
-////                boolean canRead = device.canRead();
-////                boolean canWrite = device.canWrite();
-////                if (waitFor != 0 || !canRead || !canWrite) {
-////                    throw new SecurityException();
-////                }
-////            } catch (Exception e) {
-////                e.printStackTrace();
-////            }
-//        } else {
-//            mFd = open(device.getAbsolutePath(), baudrate);
-//            if (mFd == null) {
-//                Log.d("serial", "串口开启失败------");
-//                throw new IOException();
-//            }
-//            //LogUtil.d(TAG,"串口开启成功");
-//            mFileInputStream = new FileInputStream(mFd);
-//            mFileOutputStream = new FileOutputStream(mFd);
-//        }
-//    }
-
-    public boolean initSerialPort(File device, int baudrate) throws SecurityException, IOException {
+    public SerialPort(File device, int baudrate) throws SecurityException, IOException {
         if (!device.canRead() || !device.canWrite()) {
-            return false;
-        } else {
-            mFd = open(device.getAbsolutePath(), baudrate);
-            if (mFd == null) {
-                Log.d("serial", "串口开启失败------");
-                throw new IOException();
+            try {
+                Process su;
+                su = Runtime.getRuntime().exec("su");
+                String cmd = "chmod 777 " + device.getAbsolutePath();
+                su.getOutputStream().write(cmd.getBytes());
+                su.getOutputStream().flush();
+                int waitFor = su.waitFor();
+                boolean canRead = device.canRead();
+                boolean canWrite = device.canWrite();
+                if (waitFor != 0 || !canRead || !canWrite) {
+                    throw new SecurityException();
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            //LogUtil.d(TAG,"串口开启成功");
-            mFileInputStream = new FileInputStream(mFd);
-            mFileOutputStream = new FileOutputStream(mFd);
-            return true;
         }
+
+        mFd = open(device.getAbsolutePath(), baudrate);
+        if (mFd == null) {
+            Log.d("serial", "串口开启失败------");
+            throw new IOException();
+        }
+        //LogUtil.d(TAG,"串口开启成功");
+        mFileInputStream = new FileInputStream(mFd);
+        mFileOutputStream = new FileOutputStream(mFd);
     }
 
     /**

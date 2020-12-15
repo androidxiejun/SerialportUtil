@@ -41,7 +41,11 @@ public class SerialPortBuilder {
 
     public SerialPortService createService() {
         SerialPortService serialPortService = null;
-        serialPortService = SerialPortService.getInstance();
+        try {
+            serialPortService = new SerialPortService(mDevicePath, mBaudrate, mTimeOut);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         return serialPortService;
     }
 

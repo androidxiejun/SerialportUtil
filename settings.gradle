@@ -1,1 +1,1 @@
-include ':app', ':serialportutil'
+include ':app', ':serialportutil', ':test'
